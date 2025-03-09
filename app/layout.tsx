@@ -6,6 +6,7 @@ import { ChartColumnBigIcon } from "lucide-react";
 import { SignedOut, ClerkProvider, SignInButton, SignUpButton, SignedIn } from "@clerk/nextjs";
 import { Button } from "@/components/ui/button";
 import UserDropdown from "./user-dropdown";
+import { Toaster } from "@/components/ui/sonner";
 
 
 const poppins = Poppins({
@@ -52,6 +53,7 @@ export default function RootLayout({
             </div>
           </nav>
           {children}
+          <Toaster />
         </body>
       </html>
     </ClerkProvider>

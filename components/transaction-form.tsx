@@ -14,7 +14,7 @@ import { Calendar } from "./ui/calendar"
 import { Input } from "./ui/input"
 import { type Category } from "@/types/Category"
 
-const transactionFormSchema = z.object({
+export const transactionFormSchema = z.object({
   transactionType: z.enum(["income", "expense"]),
   categoryId: z.coerce.number().positive("Please select a category"),
   transactionDate: z.coerce
@@ -27,11 +27,13 @@ const transactionFormSchema = z.object({
     .max(300, "Description must contain a max of 300 characters"),
 })
 
-export default function TransactionForm({
-  categories,
-}: {
+type Props = {
   categories: Category[];
-}) {
+  onSubmit: (data: z.infer<typeof transactionFormSchema>) => Promise<void>;
+
+}
+
+export default function TransactionForm({ categories, onSubmit }: Props) {
   const form = useForm<z.infer<typeof transactionFormSchema>>({
     resolver: zodResolver(transactionFormSchema),
     defaultValues: {
@@ -47,10 +49,6 @@ export default function TransactionForm({
     (category) => category.type === form.getValues("transactionType")
   );
 
-  const onSubmit = async (
-    data: z.infer<typeof transactionFormSchema>
-  ) => { };
-
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)}>
@@ -60,28 +58,25 @@ export default function TransactionForm({
         >
           <FormField
             control={form.control}
-            name="categoryId"
+            name="transactionType"
             render={({ field }) => {
               return (
                 <FormItem>
-                  <FormLabel>Category</FormLabel>
+                  <FormLabel>Transaction Type</FormLabel>
                   <FormControl>
                     <Select
-                      onValueChange={field.onChange}
-                      value={field.value.toString()}
+                      onValueChange={(newValue) => {
+                        field.onChange(newValue);
+                        form.setValue("categoryId", 0);
+                      }}
+                      value={field.value}
                     >
                       <SelectTrigger className="w-full">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        {filteredCategories.map((category) => (
-                          <SelectItem
-                            key={category.id}
-                            value={category.id.toString()}
-                          >
-                            {category.name}
-                          </SelectItem>
-                        ))}
+                        <SelectItem value="income">Income</SelectItem>
+                        <SelectItem value="expense">Expense</SelectItem>
                       </SelectContent>
                     </Select>
                   </FormControl>
@@ -89,8 +84,7 @@ export default function TransactionForm({
                 </FormItem>
               );
             }}
-          />
-          <FormField
+          />          <FormField
             control={form.control}
             name="categoryId"
             render={({ field }) => {
